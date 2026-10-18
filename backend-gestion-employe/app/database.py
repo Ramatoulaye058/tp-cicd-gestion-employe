@@ -11,21 +11,20 @@ SQLALCHEMY_DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql://admin:admin123@localhost:5432/dbdevnest"
 )
-#  PostgreSQL  en local
-# SQLALCHEMY_DATABASE_URL = "postgresql://admin:admin123@localhost:5432/dbdevnest"
 
-# Postgres conteneurise
-# SQLALCHEMY_DATABASE_URL = "postgresql://admin:admin123@postgres_server:5432/dbdevnest"
-
-#  PostgreSQL  en deploiement avec Docker Compose
-# SQLALCHEMY_DATABASE_URL = "postgresql://admin:admin123@db-service:5432/dbemploye"
-
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={
+# Les options d'encodage n'existent que pour PostgreSQL :
+# SQLite (utilisée pour les tests) les refuse.
+if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+else:
+    connect_args = {
         "client_encoding": "utf8",
         "options": "-c client_encoding=utf8 -c lc_messages=C"
-    },
+    }
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    connect_args=connect_args,
     pool_pre_ping=True
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
