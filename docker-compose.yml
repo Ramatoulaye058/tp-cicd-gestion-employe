@@ -1,0 +1,45 @@
+services:
+  postgres_server:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: dbdevnest
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/db_data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d dbdevnest" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    networks:
+      - gestion-network
+
+  backend:
+    build: ./backend-gestion-employe
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@postgres_server:5432/dbdevnest
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres_server:
+        condition: service_healthy
+    networks:
+      - gestion-network
+  frontend:
+    build: ./frontend-gestion-employe
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - gestion-network
+
+networks:
+  gestion-network:
+    driver: bridge
+
+volumes:
+  db_data:
