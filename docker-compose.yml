@@ -18,6 +18,7 @@ services:
       - gestion-network
 
   backend:
+    image: rama058/backend-gestion-employe:latest
     build: ./backend-gestion-employe
     environment:
       DATABASE_URL: postgresql://admin:admin123@postgres_server:5432/dbdevnest
@@ -29,6 +30,7 @@ services:
     networks:
       - gestion-network
   frontend:
+    image: rama058/frontend-gestion-employe:latest
     build: ./frontend-gestion-employe
     ports:
       - "3000:3000"
