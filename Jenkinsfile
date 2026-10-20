@@ -45,6 +45,24 @@ pipeline {
             }
         }
 
+        stage('Scan securite (Trivy)') {
+            steps {
+                sh '''
+                    docker run --rm \
+                      -v /var/run/docker.sock:/var/run/docker.sock \
+                      aquasec/trivy:latest image \
+                      --severity HIGH,CRITICAL --exit-code 0 \
+                      $BACKEND_IMAGE:latest
+
+                    docker run --rm \
+                      -v /var/run/docker.sock:/var/run/docker.sock \
+                      aquasec/trivy:latest image \
+                      --severity HIGH,CRITICAL --exit-code 0 \
+                      $FRONTEND_IMAGE:latest
+                '''
+            }
+        }
+
         stage('Push Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
