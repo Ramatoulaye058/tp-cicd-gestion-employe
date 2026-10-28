@@ -38,6 +38,22 @@ pipeline {
             }
         }
 
+        stage('Analyse qualite (SonarQube)') {
+            steps {
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                        docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
+                          -e SONAR_HOST_URL=http://host.docker.internal:9000 \
+                          -e SONAR_TOKEN=$SONAR_TOKEN \
+                          sonarsource/sonar-scanner-cli:latest \
+                          -Dsonar.projectKey=gestion-employe \
+                          -Dsonar.sources=. \
+                          -Dsonar.exclusions=**/node_modules/**,**/.venv/**,**/venv/**
+                    '''
+                }
+            }
+        }
+
         stage('Build des images') {
             steps {
                 sh 'docker build -t $BACKEND_IMAGE:latest ./backend-gestion-employe'
